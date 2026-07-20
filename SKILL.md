@@ -9,7 +9,7 @@ description: >-
   terminal) — no zylos installation and no server-side access required.
   Use when asked about rounds, 日报, standup, 汇报, digests, member links,
   画像, or when managing a remote Rounds deployment.
-version: 0.18.1
+version: 0.19.0
 type: capability
 
 lifecycle:
