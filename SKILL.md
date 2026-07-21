@@ -9,7 +9,7 @@ description: >-
   terminal) — no zylos installation and no server-side access required.
   Use when asked about rounds, 日报, standup, 汇报, digests, member links,
   画像, or when managing a remote Rounds deployment.
-version: 0.22.4
+version: 0.22.5
 type: capability
 
 lifecycle:
@@ -55,12 +55,22 @@ node cli.js member add "Alice"   # returns her personal talk link
 node cli.js member rename 3 "Linfan"   # rename a member (links & history unaffected)
 node cli.js task list            # recurring + one-off communication tasks
 node cli.js task digest 1 --cycle 2026-07-20   # (re)generate a cycle digest
-node cli.js followup list --task 1             # follow-ups (补充/跟进) on a task
+node cli.js followup list --task 1             # follow-ups (补充/跟进) — ALWAYS review before adding (see convention below)
 node cli.js followup add --task 1 [--scope team] "..."   # append a follow-up (default scope=private)
+node cli.js followup remove 5                   # drop a superseded entry
 node cli.js brain get            # team background / probing / profile rules
 node cli.js knowledge search "release process"
 node cli.js settings get         # model / voice / language / providers
 ```
+
+**Follow-up convention (all agents must follow).** A follow-up (补充/跟进) records
+new info or progress on a task, carried into its next cycle. **Always run
+`followup list --task <id>` before adding one.** If your new entry is progress or a
+decision on the **same topic** as an existing follow-up, **replace it — `followup
+remove` the stale entry, then add the current state — instead of accumulating
+duplicates** (no in-place edit; replace = remove + add). Example: a standup raises
+"套餐方向待对齐"; once the team agrees, replace it with "套餐方向已达成共识：…" rather
+than keeping both. One current follow-up per topic.
 
 Long text is passed via stdin:
 
