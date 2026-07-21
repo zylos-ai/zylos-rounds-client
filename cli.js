@@ -24,7 +24,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
 
-export const CLIENT_VERSION = '0.22.5';
+export const CLIENT_VERSION = '0.22.6';
 
 const HELP = `rounds CLI v${CLIENT_VERSION} — manage the Rounds app via its admin API
 
