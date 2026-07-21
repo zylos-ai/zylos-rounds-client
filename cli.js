@@ -24,7 +24,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
 
-export const CLIENT_VERSION = '0.22.2';
+export const CLIENT_VERSION = '0.22.3';
 
 const HELP = `rounds CLI v${CLIENT_VERSION} — manage the Rounds app via its admin API
 
@@ -35,6 +35,7 @@ Members
   member list                         roster with per-task links, context/profile
   member add <name> [--language L]    add (or re-activate) a member; mints their daily-task link (L: zh|en)
   member remove <id>                  deactivate a member (history kept, links die)
+  member rename <id> <new-name>       rename a member (name is unique; links/history unaffected)
   member set-context <id> [text]      set 基础背景 (text arg or stdin; empty clears)
   member set-profile <id> [text]      overwrite 动态画像 (text arg or stdin; empty clears)
   member set-language <id> [zh|en]    set conversation/UI language (empty = team default)
@@ -204,6 +205,10 @@ async function run(target, cmd, sub, args, flags) {
     case 'member set-context': return put(`/api/members/${id(args[0])}/context`, { context: textInput(args[1]) });
     case 'member set-profile': return put(`/api/members/${id(args[0])}/profile`, { profile: textInput(args[1]) });
     case 'member set-language': return put(`/api/members/${id(args[0])}/language`, { language: args[1] ?? '' });
+    case 'member rename': {
+      if (!args[0] || !args[1]) fail('usage: member rename <id> <new-name>');
+      return put(`/api/members/${id(args[0])}/name`, { name: args.slice(1).join(' ') });
+    }
 
     case 'brain get': return get('/api/context');
     case 'brain set': {
