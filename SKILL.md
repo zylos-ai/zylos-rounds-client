@@ -9,7 +9,7 @@ description: >-
   terminal) — no zylos installation and no server-side access required.
   Use when asked about rounds, 日报, standup, 汇报, digests, member links,
   画像, or when managing a remote Rounds deployment.
-version: 0.19.6
+version: 0.22.2
 type: capability
 
 lifecycle:
@@ -54,6 +54,8 @@ node cli.js member list          # roster with per-task links
 node cli.js member add "Alice"   # returns her personal talk link
 node cli.js task list            # recurring + one-off communication tasks
 node cli.js task digest 1 --cycle 2026-07-20   # (re)generate a cycle digest
+node cli.js followup list --task 1             # follow-ups (补充/跟进) on a task
+node cli.js followup add --task 1 [--scope team] "..."   # append a follow-up (default scope=private)
 node cli.js brain get            # team background / probing / profile rules
 node cli.js knowledge search "release process"
 node cli.js settings get         # model / voice / language / providers

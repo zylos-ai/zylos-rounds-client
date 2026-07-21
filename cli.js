@@ -24,7 +24,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
 
-export const CLIENT_VERSION = '0.19.6';
+export const CLIENT_VERSION = '0.22.2';
 
 const HELP = `rounds CLI v${CLIENT_VERSION} — manage the Rounds app via its admin API
 
@@ -49,6 +49,11 @@ Knowledge base
   knowledge add --title T [--tags G] [text]              (content from text arg or stdin)
   knowledge update <id> [--title T] [--tags G] [text]
   knowledge remove <id>
+
+Follow-ups (补充/跟进) — append info to a task; carried into its next cycle
+  followup list --task <id>                             follow-ups on a task (newest first)
+  followup add --task <id> [--scope team] [--by NAME] [text]   default scope=private; content from arg or stdin
+  followup remove <id>
 
 Communication tasks (沟通任务)
   task list                           all tasks with current-cycle progress
@@ -230,6 +235,23 @@ async function run(target, cmd, sub, args, flags) {
       });
     }
     case 'knowledge remove': return del(`/api/knowledge/${id(args[0])}`).then(() => ({ ok: true, removed: id(args[0]) }));
+
+    case 'followup list': {
+      if (!flags.task) fail('usage: followup list --task <id>');
+      return get(`/api/followups?task_id=${id(flags.task)}`);
+    }
+    case 'followup add': {
+      if (!flags.task) fail('usage: followup add --task <id> [--scope team] [--by NAME] <text|stdin>');
+      const content = textInput(args[0]);
+      if (!content) fail('follow-up content required (text arg or stdin)');
+      return post('/api/followups', {
+        task_id: id(flags.task),
+        content,
+        scope: flags.scope === 'team' ? 'team' : 'private',
+        author: flags.by || '',
+      });
+    }
+    case 'followup remove': return del(`/api/followups/${id(args[0])}`).then(() => ({ ok: true, removed: id(args[0]) }));
 
     case 'task list': return get('/api/tasks');
     case 'task show': {
