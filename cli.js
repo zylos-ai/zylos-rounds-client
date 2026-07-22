@@ -24,7 +24,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
 
-export const CLIENT_VERSION = '0.27.0';
+export const CLIENT_VERSION = '0.28.0';
 
 const HELP = `rounds CLI v${CLIENT_VERSION} — manage the Rounds app via its admin API
 
@@ -33,7 +33,8 @@ Usage: cli.js [--url U] [--key K] <command> [args]
 
 Members
   member list                         roster with per-task links, context/profile
-  member add <name> [--language L]    add (or re-activate) a member; mints their daily-task link (L: zh|en)
+  member add <name> [--language L]    add (or re-activate) a member (L: zh|en); joins NO tasks
+                                      unless --join-daily is given (mints their daily-task link)
   member remove <id>                  deactivate a member (history kept, links die)
   member rename <id> <new-name>       rename a member (name is unique; links/history unaffected)
   member set-context <id> [text]      set 基础背景 (text arg or stdin; empty clears)
@@ -72,6 +73,8 @@ Communication tasks (沟通任务)
   task links <id>                     per-member conversation links for a task
   task cycles <id>                    cycle keys a task has data/digests for
   task reset-link <taskId> <memberId> rotate one member's link for a task (old link dies)
+  task add-member <taskId> <memberId> add a member to an existing task (mints their link; idempotent)
+  task remove-member <taskId> <memberId>  remove a member from a task (link dies; records kept)
   task digest <id> [--cycle KEY] [--close true|false]
                                       generate/overwrite a digest (recurring: per cycle)
   task close <id> | task reopen <id>  (closing the built-in daily pauses the standup)
@@ -196,9 +199,10 @@ async function run(target, cmd, sub, args, flags) {
   switch (`${cmd} ${sub}`) {
     case 'member list': return get('/api/members');
     case 'member add': {
-      if (!args[0]) fail('usage: member add <name> [--language zh|en]');
+      if (!args[0]) fail('usage: member add <name> [--language zh|en] [--join-daily]');
       const body = { name: args[0] };
       if (flags.language !== undefined) body.language = flags.language;
+      if (flags['join-daily'] !== undefined) body.join_daily = flags['join-daily'] !== 'false';
       return post('/api/members', body);
     }
     case 'member remove': return del(`/api/members/${id(args[0])}`).then(() => ({ ok: true, removed: id(args[0]) }));
@@ -325,6 +329,15 @@ async function run(target, cmd, sub, args, flags) {
     case 'task reset-link': {
       if (args.length < 2) fail('usage: task reset-link <taskId> <memberId>');
       return post(`/api/tasks/${id(args[0])}/members/${id(args[1])}/reset-token`, {});
+    }
+    case 'task add-member': {
+      if (args.length < 2) fail('usage: task add-member <taskId> <memberId>');
+      return post(`/api/tasks/${id(args[0])}/members`, { member_id: id(args[1]) });
+    }
+    case 'task remove-member': {
+      if (args.length < 2) fail('usage: task remove-member <taskId> <memberId>');
+      return del(`/api/tasks/${id(args[0])}/members/${id(args[1])}`)
+        .then(() => ({ ok: true, task_id: id(args[0]), removed_member_id: id(args[1]) }));
     }
     case 'task digest': {
       const body = {};
