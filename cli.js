@@ -24,7 +24,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
 
-export const CLIENT_VERSION = '0.31.0';
+export const CLIENT_VERSION = '0.32.0';
 
 const HELP = `rounds CLI v${CLIENT_VERSION} — manage the Rounds app via its admin API
 
@@ -84,9 +84,9 @@ Reports & settings
   report today | report <YYYY-MM-DD>  day digest (structured + transcripts)
   report history                      per-day submission counts
   settings get
-  settings set [--model M] [--voice V] [--time-zone TZ] [--language zh|en] [--profile-model M] [--digest-model M]
-               [--voice-provider S] [--profile-provider S] [--digest-provider S]
-                                      models for 画像/汇总 + provider slug per slot + IANA time zone; '' reverts to default
+  settings set [--model M] [--voice V] [--time-zone TZ] [--language zh|en] [--conversation-model M] [--profile-model M] [--digest-model M]
+               [--voice-provider S] [--conversation-provider S] [--profile-provider S] [--digest-provider S]
+                                      models for text conversation/画像/汇总 + provider slug per slot + IANA time zone; '' reverts to default
 
 API keys (v0.17)
   token list                          named management API keys (never shows secrets)
@@ -360,14 +360,15 @@ async function run(target, cmd, sub, args, flags) {
       const body = {};
       if (flags.model) body.model = flags.model;
       if (flags.voice) body.voice = flags.voice;
+      if (flags['conversation-model'] !== undefined) body.conversation_model = flags['conversation-model'];
       if (flags['profile-model'] !== undefined) body.profile_model = flags['profile-model'];
       if (flags['digest-model'] !== undefined) body.digest_model = flags['digest-model'];
       if (flags['time-zone'] !== undefined) body.time_zone = flags['time-zone'];
       if (flags.language !== undefined) body.language = flags.language;
-      for (const slot of ['voice', 'profile', 'digest']) {
+      for (const slot of ['voice', 'conversation', 'profile', 'digest']) {
         if (flags[`${slot}-provider`] !== undefined) body[`${slot}_provider`] = flags[`${slot}-provider`];
       }
-      if (!Object.keys(body).length) fail('usage: settings set [--model M] [--voice V] [--time-zone TZ] [--profile-model M] [--digest-model M] [--voice-provider S] [--profile-provider S] [--digest-provider S]');
+      if (!Object.keys(body).length) fail('usage: settings set [--model M] [--voice V] [--time-zone TZ] [--conversation-model M] [--profile-model M] [--digest-model M] [--voice-provider S] [--conversation-provider S] [--profile-provider S] [--digest-provider S]');
       return put('/api/settings', body);
     }
 

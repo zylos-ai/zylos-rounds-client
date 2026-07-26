@@ -1,15 +1,15 @@
 ---
 name: rounds-client
 description: >-
-  Remote management client for a Rounds server (delegated 1:1 voice
-  conversations for teams — daily standups, retros, topic rounds). Manage
+  Remote management client for a Rounds server (delegated 1:1 text-first
+  and voice conversations for teams — daily standups, retros, topic rounds). Manage
   members, tasks, the agent's brain (background / probing / profiles),
   knowledge base, reports, digests and settings over HTTPS with a bearer
   API key. Works from any agent runtime (Claude Code, Codex, or a bare
   terminal) — no zylos installation and no server-side access required.
   Use when asked about rounds, 日报, standup, 汇报, digests, member links,
   画像, or when managing a remote Rounds deployment.
-version: 0.31.0
+version: 0.32.0
 type: capability
 
 lifecycle:
