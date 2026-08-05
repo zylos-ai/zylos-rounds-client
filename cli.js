@@ -24,7 +24,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
 
-export const CLIENT_VERSION = '0.33.12';
+export const CLIENT_VERSION = '0.34.0';
 
 const HELP = `rounds CLI v${CLIENT_VERSION} — manage the Rounds app via its admin API
 
@@ -64,12 +64,14 @@ Communication tasks (沟通任务)
                                       create a task; brief from text arg or stdin;
                                       [--questions Q] [--deadline YYYY-MM-DD]
                                       [--digest-instruction I] [--probe-instruction P]
+                                      [--voice-enabled true|false] (default false)
                                       oneshot only: [--auto-digest YYYY-MM-DDTHH:MM] [--close-on-digest true]
                                       recurring (implied by --cadence): --cadence daily|weekly|interval
                                                  [--dow 1,5] [--every N] [--anchor YYYY-MM-DD]
   task update <id> [--title T] [--questions Q] [--deadline D]
                    [--digest-instruction I] [--probe-instruction P] [--auto-digest ISO|none]
-                   [--close-on-digest true|false] [--cadence ... --dow ... --every N] [brief]
+                   [--close-on-digest true|false] [--voice-enabled true|false]
+                   [--cadence ... --dow ... --every N] [brief]
   task links <id>                     per-member conversation links for a task
   task cycles <id>                    cycle keys a task has data/digests for
   task reset-link <taskId> <memberId> rotate one member's link for a task (old link dies)
@@ -145,6 +147,13 @@ export function resolveTarget(flags, env, home) {
     } catch { /* keep searching */ }
   }
   return null;
+}
+
+export function parseBooleanFlag(value, name) {
+  if (value !== 'true' && value !== 'false') {
+    throw new Error(`${name} must be true or false`);
+  }
+  return value === 'true';
 }
 
 function readStdin() {
@@ -289,6 +298,9 @@ async function run(target, cmd, sub, args, flags) {
       if (flags.deadline) body.deadline = flags.deadline;
       if (flags['digest-instruction'] !== undefined) body.digest_instruction = flags['digest-instruction'];
       if (flags['probe-instruction'] !== undefined) body.probe_instruction = flags['probe-instruction'];
+      if (flags['voice-enabled'] !== undefined) {
+        body.voice_enabled = parseBooleanFlag(flags['voice-enabled'], '--voice-enabled');
+      }
       if (flags['auto-digest']) body.digest_auto_at = flags['auto-digest'];
       if (flags['close-on-digest'] !== undefined) body.digest_close_linked = flags['close-on-digest'] !== 'false';
       return post('/api/tasks', body);
@@ -301,6 +313,9 @@ async function run(target, cmd, sub, args, flags) {
       if (flags.deadline !== undefined) body.deadline = flags.deadline;
       if (flags['digest-instruction'] !== undefined) body.digest_instruction = flags['digest-instruction'];
       if (flags['probe-instruction'] !== undefined) body.probe_instruction = flags['probe-instruction'];
+      if (flags['voice-enabled'] !== undefined) {
+        body.voice_enabled = parseBooleanFlag(flags['voice-enabled'], '--voice-enabled');
+      }
       if (flags['auto-digest'] !== undefined) body.digest_auto_at = flags['auto-digest'] === 'none' ? '' : flags['auto-digest'];
       if (flags['close-on-digest'] !== undefined) body.digest_close_linked = flags['close-on-digest'] !== 'false';
       if (flags.cadence) {
